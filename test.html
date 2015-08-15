@@ -18,8 +18,9 @@ var chatout = document.getElementById("chatout");
 var chatheader = document.getElementById("chatheader");
 var gForumID = getUrlVars()["forumID"];
 var gMsgID = getUrlVars()["msgID"];
-var onlymouseover = "false";//getUrlVars()["onlymouseover"];
+//var onlymouseover = "false";//getUrlVars()["onlymouseover"];
 var gThreadList = [];
+var postdict = {};
 
 var hostname="/";
 var forumshost=hostname+"forums";
@@ -35,11 +36,11 @@ function handleForums(forums){
 	console.log(forums);
   for (fkey in forums){
     f = forums[fkey];
-    if(f['visible_msg_count']>100){
+    if(f['visible_msg_count']>10 || 1){
     //if (f['forumRelationship'] == 'SUBSCRIBED' || 1){
       var instantlink = '<a href="#?forumID='+f['id']+'" onclick="loadForum(\''+f['id']+'\');">'+f['name']+'</a>';
       forumsout.innerHTML += "<li>"+instantlink+"</li>";
-      forumIDNameDict[f['id']] = f['forumName'];
+      forumIDNameDict[f['id']] = f['name'];
       //console.log(f);
     }
   }
@@ -50,97 +51,87 @@ function handleForums(forums){
     $.getJSON('msg'+gMsgID+'.json', loadFullMsg);//showChildren(newThread);
   }
 }
-
-function loadFullMsg(msgin){
-  onlymouseover = "true";
-  convertRSPost(msgin);
-  //showChildren(msgin)
-  //loadAllPosts();
-  
-}
-
 function loadForum(forumID){
   gForumID = forumID;
   console.log("requesting "+'forum'+forumID+'.json');
-  var loadallLink = '<a href="#" onclick="loadAllPosts();return false;">Load All Children</a>';
-  chatheader.innerHTML = "<h3>"+forumIDNameDict[forumID]+"</h3> "+loadallLink;
+  //var loadallLink = '<a href="#" onclick="loadAllPosts();return false;">Load All Children</a>';
+  chatheader.innerHTML = "<h3>"+forumIDNameDict[forumID]+"</h3> "//+loadallLink;
   chatout.innerHTML = "";
   $.getJSON('forum?fid='+forumID, handleThreadList);
 }
-
-function loadAllPosts(){
-  onlymouseover = "false";
-  chatheader.innerHTML = "<h3>"+forumIDNameDict[gForumID]+"</h3> "
-  for (var f in gThreadList){
-    var threadpost = gThreadList[f];
-    $.getJSON('thread'+threadpost.id+'.json', showChildren);
-  }
-}
-
+var idl = 0;
 function handleThreadList(threadList){
 	console.log(threadList);
-	threadList=threadList['data'].reverse();
+	threadList=threadList['data'];//.reverse();
   console.log("found threads:"+ threadList.length);
   //threadList.sort(function(a,b){return a.ts-b.ts});
   gThreadList = threadList;
-  onlymouseover = "true";
-  var pd = makeTree(threadList);
-  console.log(pd);
-  loadFromDict(pd, "0000000000000000000000000000000000000000");
-  /*
-  for (var f in threadList){
-    var threadpost = threadList[f];
-    //convertRSPost(threadpost);
-  addPostHeaderToFeedPanel(threadpost);
-  }
-  for (var f in threadList){
-    var threadpost = threadList[f];
-  addPostToFeedPanel(threadpost);
-  }
-  */
+  //onlymouseover = "true";
+  makeTree(threadList);
+  console.log("===TREE===")
+  //console.log(pd);
+  idl=0;
+  loadFromDict("0000000000000000000000000000000000000000");
 }
 
-function loadFromDict(postdict, start){
-	console.log("loadFromDict")
-	console.log(start)
-	console.log(postdict)
+function loadFromDict(start){
+	//postdict=pd;
+	var spaces = "";
+	for (var sc = 0;sc<idl;sc++)
+		spaces+=" ";
+	console.log(spaces+"loadFromDict "+idl)
+	console.log(spaces+start)
+	//console.log(postdict)
 	if (!(start in postdict))return;
 	posts = postdict[start]
-	console.log(posts)
+	console.log(spaces+"POSTS");
+	console.log(spaces+posts);
+	console.log(spaces+posts.length);
+	//console.log(posts)
 	//if(posts==undefined)return;
+	for (var fid in posts){
+	//for (var fid = 0;fid < posts.length;fid++){
+		var tp = posts[fid];
+		//convertRSPost(tp);
+
+		if (typeof tp != 'undefined'){
+			addPostHeaderToFeedPanel(tp);
+			//loadFromDict(postdict, tp.id);
+		} else {console.log("ERROR1");}
+	}
+  
+	posts = postdict[start]
+	console.log(spaces+posts);
+	console.log(spaces+posts.length);
   for (var f in posts){
-    var threadpost = posts[f];
-    //convertRSPost(threadpost);
-  addPostHeaderToFeedPanel(threadpost);
-  loadFromDict(postdict, threadpost.id);
+  //for (var f = 0;f < posts.length;f++){
+  console.log(spaces+"f=");
+	console.log(spaces+f);
+	posts = postdict[start];
+	var threadpost = posts[f];
+	//convertRSPost(threadpost);
+	console.log(spaces+threadpost);
+	if (typeof threadpost != 'undefined'){
+		//addPostHeaderToFeedPanel(threadpost);
+		console.log(spaces+"OK");
+		if(threadpost.id in postdict){
+			idl+=1;
+			loadFromDict(threadpost.id);
+			idl-=1;
+		}
+		console.log(spaces+"OK2");
+	} else {console.log("ERROR2");}
   }
 }
 
-function makeTree(posts){
-	var postdict={}
-	for (var po in posts){
-		p=posts[po];
+function makeTree(postsl){
+	postdict={}
+	for (var po in postsl){
+		p=postsl[po];
 		if (!(p.parent_id in postdict))postdict[p.parent_id]=[]
 		postdict[p.parent_id].push(p)
 	}
-	return postdict;
-}
-
-function showChildren(cThread){
-  if (cThread.length == 0) return;
-  cThread.sort(function(a,b){return a.ts-b.ts});
-  for (var p in cThread){
-    var cPost = cThread[p];
-    convertRSPost(cPost);
-    if(onlymouseover == "false")
-      $.getJSON('thread'+cPost.id+'.json', showChildren);//showChildren(newThread);
-  }
-}
-
-function convertRSPost(fpost){
-  addPostHeaderToFeedPanel(fpost);
-  addPostToFeedPanel(fpost);
-  //$.getJSON('msg'+fpost['id']+'.json', addPostToFeedPanel);//showChildren(newThread);
+	//return postdict;
 }
   
 function makeReplyPanel(id){
@@ -154,62 +145,19 @@ function makeReplyPanel(id){
   return childPanel;
 }
 
-function getName(personID){
-	return personID;
-  if(typeof(personID)=="undefined")
-    return "AC";
-  if(personID.length>2)
-    return personID;//bridge.getPeerName(personID)
-  return "Anon";
-}
-/*
-function tryLoadChildren(elem){
-  if(onlymouseover == "false") return;
-  if(elem.currentTarget.hasOwnProperty("requestedchildren")){
-    console.log("no retry");
-    return;
-  }else{
-    console.log("Loading...");
-    elem.currentTarget.requestedchildren = true;
-    var jsonfile = 'thread'+elem.currentTarget.id+'.json';
-    console.log(jsonfile);
-    $.getJSON(jsonfile, showChildren);//showChildren(newThread);
-  }
-}*/
-function addPostToFeedPanel(post){
-  finalPanel = document.getElementById(post.id);
-  // Define panel content
-    var permaLink = '<a href="#?msgID='+post.id+'">'+post.id+'</a>';
-  var newPanel = "<span class=\"postname\">"+post.author_id+"</span>, <span class=\"postdate\"> @"+new Date(post.ts*1000)+"</span>: <span class=\"posttitle\">"+post.name+"</span> <span class=\"postid\">(ID: "+permaLink+")</span>\n<div class=\"postmessage\">"+post.message.replace(/(\n)+/g, '<br />')+"</div>\n";
-
-  //var newPanel = "<span class=\"postname\">"+getName(post.srcId)+"</span>, <span class=\"postdate\"> @"+new Date(post.ts*1000)+"</span>: <span class=\"posttitle\">"+post.title+"</span> <span class=\"postid\">(ID: "+post.id+")</span>\n<div class=\"postmessage\">"+post.msg.replace(/(\n)+/g, '<br />')+"</div>\n";
-
-  //var finalPanel = document.createElement("div");
-  finalPanel.className = 'PIPanel';
-  finalPanel.innerHTML = newPanel;
-  finalPanel.id = post.id;
-  finalPanel.appendChild(makeReplyPanel(post.id));
-  //finalPanel.onclick = tryLoadChildren;
-  return true;
-}
-
 function addPostHeaderToFeedPanel(post){
   if (document.getElementById(post.id)) return false;
   // Define panel content
   //onclick="loadForum(\''+f['id']+'\');"
   var permaLink = '<a href="#?msgID='+post.id+'">'+post.id+'</a>';
-  var newPanel = "<span class=\"postname\">"+getName(post.author_id)+"</span>, <span class=\"postdate\"> @"+new Date(post.ts*1000)+"</span>: <span class=\"posttitle\">"+post.name+"</span> <span class=\"postid\">(ID: "+permaLink+")</span>\n<div class=\"postmessage\">"+post.message.replace(/(\n)+/g, '<br />')+"</div>\n";
+  var newPanel = "<span class=\"postname\">"+post.author_id+"</span>, <span class=\"postdate\"> @"+new Date(post.ts*1000)+"</span>: <span class=\"posttitle\">"+post.name+"</span> <span class=\"postid\">(ID: "+permaLink+")</span>\n<div class=\"postmessage\">"+post.message.replace(/(\n)+/g, '<br />')+"</div>\n";
 
   var finalPanel = document.createElement("div");
   finalPanel.className = 'PIPanel';
   finalPanel.innerHTML = newPanel;
   finalPanel.id = post.id;
   finalPanel.appendChild(makeReplyPanel(post.id));
-  //finalPanel.onclick = tryLoadChildren;
-  //$.getJSON('thread'+cPost.id+'.json', showChildren);//showChildren(newThread);
-  //var imgPanel = document.createElement("img");
-  //bridge.getAvatarDetails(post.srcId).assignTo(imgPanel);
-  //finalPanel.insertBefore(imgPanel, finalPanel.firstChild);
+  
   var replypanel = document.getElementById(post.parent_id+"replies");
   if(replypanel && post.hasOwnProperty("parent_id") && post.parent_id.length>2){
     //imgPanel.style.float="left";
