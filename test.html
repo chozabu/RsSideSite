@@ -34,9 +34,10 @@ function handleForums(forums){
 	console.log(forums);
 	forums=forums['data']
 	console.log(forums);
+  forums.sort(function(a,b){return a.visible_msg_count-b.visible_msg_count});
   for (fkey in forums){
     f = forums[fkey];
-    if(f['visible_msg_count']>10 || 1){
+    if(f['subscribed']){
     //if (f['forumRelationship'] == 'SUBSCRIBED' || 1){
       var instantlink = '<a href="#?forumID='+f['id']+'" onclick="loadForum(\''+f['id']+'\');">'+f['name']+'</a>';
       forumsout.innerHTML += "<li>"+instantlink+"</li>";
