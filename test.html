@@ -155,6 +155,7 @@ function makeReplyPanel(id){
 }
 
 function getName(personID){
+	return personID;
   if(typeof(personID)=="undefined")
     return "AC";
   if(personID.length>2)
@@ -179,7 +180,7 @@ function addPostToFeedPanel(post){
   finalPanel = document.getElementById(post.id);
   // Define panel content
     var permaLink = '<a href="#?msgID='+post.id+'">'+post.id+'</a>';
-  var newPanel = "<span class=\"postname\">"+getName(post.srcId)+"</span>, <span class=\"postdate\"> @"+new Date(post.ts*1000)+"</span>: <span class=\"posttitle\">"+post.title+"</span> <span class=\"postid\">(ID: "+permaLink+")</span>\n<div class=\"postmessage\">"+post.message.replace(/(\n)+/g, '<br />')+"</div>\n";
+  var newPanel = "<span class=\"postname\">"+post.author_id+"</span>, <span class=\"postdate\"> @"+new Date(post.ts*1000)+"</span>: <span class=\"posttitle\">"+post.name+"</span> <span class=\"postid\">(ID: "+permaLink+")</span>\n<div class=\"postmessage\">"+post.message.replace(/(\n)+/g, '<br />')+"</div>\n";
 
   //var newPanel = "<span class=\"postname\">"+getName(post.srcId)+"</span>, <span class=\"postdate\"> @"+new Date(post.ts*1000)+"</span>: <span class=\"posttitle\">"+post.title+"</span> <span class=\"postid\">(ID: "+post.id+")</span>\n<div class=\"postmessage\">"+post.msg.replace(/(\n)+/g, '<br />')+"</div>\n";
 
@@ -197,7 +198,7 @@ function addPostHeaderToFeedPanel(post){
   // Define panel content
   //onclick="loadForum(\''+f['id']+'\');"
   var permaLink = '<a href="#?msgID='+post.id+'">'+post.id+'</a>';
-  var newPanel = "<span class=\"postname\">"+getName(post.srcId)+"</span>, <span class=\"postdate\"> @"+new Date(post.ts*1000)+"</span>: <span class=\"posttitle\">"+post.title+"</span> <span class=\"postid\">(ID: "+permaLink+")</span>\n<div class=\"postmessage\">"+post.message.replace(/(\n)+/g, '<br />')+"</div>\n";
+  var newPanel = "<span class=\"postname\">"+getName(post.author_id)+"</span>, <span class=\"postdate\"> @"+new Date(post.ts*1000)+"</span>: <span class=\"posttitle\">"+post.name+"</span> <span class=\"postid\">(ID: "+permaLink+")</span>\n<div class=\"postmessage\">"+post.message.replace(/(\n)+/g, '<br />')+"</div>\n";
 
   var finalPanel = document.createElement("div");
   finalPanel.className = 'PIPanel';
