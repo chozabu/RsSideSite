@@ -57,11 +57,12 @@ function loadForum(forumID){
   console.log("requesting "+'forum'+forumID+'.json');
   //var loadallLink = '<a href="#" onclick="loadAllPosts();return false;">Load All Children</a>';
   chatheader.innerHTML = "<h3>"+forumIDNameDict[forumID]+"</h3> "//+loadallLink;
-  chatout.innerHTML = "";
+  chatout.innerHTML = "Loading!";
   $.getJSON('forum?fid='+forumID, handleThreadList);
 }
 var idl = 0;
 function handleThreadList(threadList){
+  chatout.innerHTML = "";
 	console.log(threadList);
 	threadList=threadList['data'];//.reverse();
   console.log("found threads:"+ threadList.length);
