@@ -17,15 +17,14 @@ print r.json()['returncode']
 #print r.json()
 print len(r.json()['data'])
 '''
-'''
+
 print "CREATE SEARCH"
 payload = {"distant": True, "search_string": "ASDASDASD"}
-r = requests.post("http://0.0.0.0:9090/api/v2/filesearch/create_search", params=payload)
+r = requests.post("http://0.0.0.0:9090/api/v2/filesearch/create_search", json=payload)
 print r.json()['returncode']
 print r.json()
-r.json()['data']
 
-
+'''
 
 print "\nGET SEARCH"
 r = requests.get("http://0.0.0.0:9090/api/v2/filesearch")
@@ -56,6 +55,7 @@ print r.json()['returncode']
 print len(r.json())
 '''
 
+'''
 print "\nFORUM"
 print "own groups"
 fid = 0
@@ -71,6 +71,6 @@ print fid
 print "\n messages in " + fname + "("+fid+")"
 r = requests.put("http://0.0.0.0:9090/api/v2/forums/"+fid)
 print r.json()['data']
-
+'''
 
 
